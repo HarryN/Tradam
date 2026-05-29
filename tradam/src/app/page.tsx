@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useAuth } from '@/features/auth/context/auth-context';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   ShoppingBag, 
   Store, 
@@ -17,6 +20,8 @@ import {
 } from 'lucide-react';
 
 export default function Home() {
+  const { user, profile, signOut } = useAuth();
+  const router = useRouter();
   const [userType, setUserType] = useState<'buyer' | 'seller'>('buyer');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -91,12 +96,34 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="text-sm font-semibold text-neutral-text hover:text-primary px-4 py-2 transition-colors">
-              Log In
-            </button>
-            <button className="text-sm font-semibold bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg transition-all shadow-sm">
-              Get Started
-            </button>
+            {user ? (
+              <>
+                {profile?.role === 'seller' ? (
+                  <Link href="/sellers/dashboard" className="text-sm font-semibold text-primary px-3 py-2 hover:underline transition-all">
+                    Dashboard
+                  </Link>
+                ) : (
+                  <span className="text-sm text-neutral-muted px-3 py-2 truncate max-w-[150px]">
+                    {user.email}
+                  </span>
+                )}
+                <button 
+                  onClick={() => signOut()}
+                  className="text-sm font-semibold border border-neutral-border text-neutral-text hover:bg-neutral-bg px-4 py-2 rounded-lg transition-all cursor-pointer"
+                >
+                  Log Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/auth/login" className="text-sm font-semibold text-neutral-text hover:text-primary px-4 py-2 transition-colors">
+                  Log In
+                </Link>
+                <Link href="/auth/signup" className="text-sm font-semibold bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg transition-all shadow-sm">
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -165,11 +192,14 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white font-semibold text-sm px-6 py-3 rounded-lg transition-all shadow-sm">
+                  <Link 
+                    href={user && profile?.role === 'seller' ? '/sellers/dashboard' : '/auth/signup'}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white font-semibold text-sm px-6 py-3 rounded-lg transition-all shadow-sm"
+                  >
                     Open Your Store
                     <ArrowRight className="w-4 h-4" />
-                  </button>
-                  <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white border border-neutral-border text-neutral-text hover:bg-neutral-bg font-semibold text-sm px-6 py-3 rounded-lg transition-all">
+                  </Link>
+                  <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white border border-neutral-border text-neutral-text hover:bg-neutral-bg font-semibold text-sm px-6 py-3 rounded-lg transition-all cursor-pointer">
                     Seller Handbook
                   </button>
                 </>
