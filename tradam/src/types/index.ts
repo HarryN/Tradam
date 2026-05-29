@@ -16,20 +16,37 @@ export interface SellerProfile {
   store_description?: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  created_at?: string;
+}
+
 export interface Product {
   id: string;
   seller_id: string;
-  category_id: string;
+  category_id: string | null;
   title: string;
   description: string;
   price: number;
   stock: number;
-  image_url?: string;
+  image_url?: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  category?: Category;
 }
 
-export interface Category {
-  id: string;
-  name: string;
+export interface ProductFormData {
+  title: string;
+  description: string;
+  category_id: string;
+  custom_category_name?: string;
+  price: string;
+  stock: string;
+  image_file?: File | null;
+  image_url?: string | null;
+  is_active: boolean;
 }
 
 export interface CartItem {
