@@ -95,6 +95,10 @@ export default function Home() {
             <a href="#sellers" className="text-sm font-medium text-neutral-muted hover:text-primary transition-colors">Sell on Tradam</a>
           </div>
 
+          <div className="hidden md:flex items-center gap-6">
+            <Link href="/products" className="text-sm font-medium text-neutral-muted hover:text-primary transition-colors">Marketplace</Link>
+          </div>
+
           <div className="flex items-center gap-3">
             {user ? (
               <>
@@ -185,10 +189,13 @@ export default function Home() {
                     />
                     <Search className="w-4 h-4 text-neutral-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
                   </div>
-                  <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white font-semibold text-sm px-6 py-3 rounded-lg transition-all shadow-sm">
+                  <Link
+                    href={`/products?q=${encodeURIComponent(searchQuery)}`}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white font-semibold text-sm px-6 py-3 rounded-lg transition-all shadow-sm"
+                  >
                     Explore Marketplace
                     <ArrowRight className="w-4 h-4" />
-                  </button>
+                  </Link>
                 </>
               ) : (
                 <>

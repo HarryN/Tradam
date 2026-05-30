@@ -25,6 +25,48 @@ export async function getProductById(id: string): Promise<Product | null> {
   return data;
 }
 
+export async function getPublicProductById(id: string): Promise<Product | null> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, category:categories(id, name)')
+    .eq('id', id)
+    .eq('is_active', true)
+    .single();
+
+  if (error) return null;
+  return data;
+}
+
+// ─── List / Search ──────────────────────────────────────────────────────────
+export async function getProducts(options?: {
+  search?: string;
+  category_id?: string | null;
+  limit?: number;
+  offset?: number;
+}): Promise<Product[]> {
+  const { search, category_id, limit = 24, offset = 0 } = options || {};
+
+  let query = supabase
+    .from('products')
+    .select('*, category:categories(id, name)')
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
+    .eq('is_active', true);
+
+  if (category_id) {
+    query = query.eq('category_id', category_id);
+  }
+
+  if (search && search.trim().length > 0) {
+    const q = `%${search.trim()}%`;
+    query = query.or(`title.ilike.${q},description.ilike.${q}`);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
 // ─── Create ──────────────────────────────────────────────────────────────────
 
 export async function createProduct(
