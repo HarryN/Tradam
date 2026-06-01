@@ -2,6 +2,7 @@ import React from 'react';
 import { getPublicProductById } from '@/services/product-service';
 import Link from 'next/link';
 import AddToCartButton from '@/features/cart/AddToCartButton';
+import RecommendationsList from '@/features/recommendations/RecommendationsList';
 
 export default async function ProductDetail({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -51,6 +52,9 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
             </div>
           </div>
         </div>
+      </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <RecommendationsList productId={product.id} />
       </div>
     </div>
   );
