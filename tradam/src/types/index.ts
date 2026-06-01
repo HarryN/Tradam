@@ -57,10 +57,31 @@ export interface CartItem {
   product?: Product;
 }
 
+export interface Cart {
+  id: string;
+  buyer_id: string;
+  created_at?: string;
+}
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  quantity: number;
+  unit_price?: number;
+  seller_id?: string;
+  seller_status?: string;
+  product?: Product;
+}
+
 export interface Order {
   id: string;
   buyer_id: string;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   total_price: number;
   created_at: string;
+}
+
+export interface BuyerOrder extends Order {
+  items: OrderItem[];
 }

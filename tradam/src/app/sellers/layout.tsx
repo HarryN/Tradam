@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/context/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import type { LucideIcon } from 'lucide-react';
 import {
   Loader2,
   AlertCircle,
@@ -17,10 +18,18 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-const navLinks = [
+type SellerNavLink = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  disabled?: boolean;
+  badge?: string;
+};
+
+const navLinks: SellerNavLink[] = [
   { href: '/sellers/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/sellers/products', label: 'My Products', icon: Package },
-  { href: '/sellers/orders', label: 'Orders', icon: ShoppingBag, disabled: true, badge: 'Sprint 5' },
+  { href: '/sellers/orders', label: 'Orders', icon: ShoppingBag },
 ];
 
 function SidebarContent({

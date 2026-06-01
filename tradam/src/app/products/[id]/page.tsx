@@ -1,9 +1,11 @@
 import React from 'react';
 import { getPublicProductById } from '@/services/product-service';
 import Link from 'next/link';
+import AddToCartButton from '@/features/cart/AddToCartButton';
 
-export default async function ProductDetail({ params }: { params: { id: string } }) {
-  const product = await getPublicProductById(params.id);
+export default async function ProductDetail({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const product = await getPublicProductById(resolvedParams.id);
 
   if (!product) {
     return (
@@ -35,9 +37,11 @@ export default async function ProductDetail({ params }: { params: { id: string }
             <div className="mt-3 text-xl font-extrabold text-neutral-text">{product.price.toLocaleString()} FCFA</div>
             <p className="mt-4 text-neutral-muted leading-relaxed">{product.description}</p>
 
-            <div className="mt-6 flex items-center gap-4">
-              <button className="px-5 py-3 bg-primary text-white rounded-lg font-semibold">Add to Cart</button>
-              <button className="px-5 py-3 border border-neutral-border rounded-lg">Contact Seller</button>
+            <div className="mt-6 flex flex-col sm:flex-row items-start gap-3">
+              <AddToCartButton productId={product.id} />
+              <Link href="/cart" className="inline-flex items-center justify-center px-5 py-3 border border-neutral-border rounded-lg text-sm font-semibold text-neutral-text hover:bg-neutral-bg transition-colors">
+                View Cart
+              </Link>
             </div>
 
             <div className="mt-6 text-sm text-neutral-muted">

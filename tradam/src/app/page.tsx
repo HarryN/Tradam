@@ -77,61 +77,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-neutral-bg flex flex-col font-sans">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-neutral-border backdrop-blur-md bg-white/90">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xl shadow-sm">
-              T
-            </div>
-            <span className="text-xl font-bold tracking-tight text-neutral-text">
-              Trada<span className="text-primary">m</span>
-            </span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-sm font-medium text-neutral-muted hover:text-primary transition-colors">Features</a>
-            <a href="#marketplace" className="text-sm font-medium text-neutral-muted hover:text-primary transition-colors">Marketplace</a>
-            <a href="#sellers" className="text-sm font-medium text-neutral-muted hover:text-primary transition-colors">Sell on Tradam</a>
-          </div>
-
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="/products" className="text-sm font-medium text-neutral-muted hover:text-primary transition-colors">Marketplace</Link>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {user ? (
-              <>
-                {profile?.role === 'seller' ? (
-                  <Link href="/sellers/dashboard" className="text-sm font-semibold text-primary px-3 py-2 hover:underline transition-all">
-                    Dashboard
-                  </Link>
-                ) : (
-                  <span className="text-sm text-neutral-muted px-3 py-2 truncate max-w-[150px]">
-                    {user.email}
-                  </span>
-                )}
-                <button 
-                  onClick={() => signOut()}
-                  className="text-sm font-semibold border border-neutral-border text-neutral-text hover:bg-neutral-bg px-4 py-2 rounded-lg transition-all cursor-pointer"
-                >
-                  Log Out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/auth/login" className="text-sm font-semibold text-neutral-text hover:text-primary px-4 py-2 transition-colors">
-                  Log In
-                </Link>
-                <Link href="/auth/signup" className="text-sm font-semibold bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg transition-all shadow-sm">
-                  Get Started
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-20 sm:pt-16 sm:pb-24 lg:pt-20 lg:pb-32 bg-radial from-emerald-50/30 via-transparent to-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

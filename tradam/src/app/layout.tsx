@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/features/auth/context/auth-context";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
+import Header from '@/components/Header';
 
 export const metadata: Metadata = {
   title: "Tradam | Cameroon Multi-Vendor E-Commerce Platform",
@@ -21,13 +16,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       <body className="min-h-full flex flex-col font-sans bg-neutral-bg text-neutral-text">
         <AuthProvider>
+          <Header />
           {children}
         </AuthProvider>
       </body>
     </html>
   );
 }
+
+

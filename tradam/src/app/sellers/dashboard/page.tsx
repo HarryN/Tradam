@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/features/auth/context/auth-context';
 import { getSellerProducts } from '@/services/product-service';
+import { getOrdersForSeller } from '@/services/order-service';
 import { Product } from '@/types';
 import Link from 'next/link';
 import {
@@ -34,6 +36,44 @@ export default function SellerDashboard() {
   const draftProducts = products.filter(p => !p.is_active).length;
   const totalValue = products.reduce((sum, p) => sum + p.price * p.stock, 0);
 
+  const [sellerOrders, setSellerOrders] = useState<number>(0);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const loadSellerOrders = async () => {
+      try {
+        const orders = await getOrdersForSeller(user.id);
+        setSellerOrders(orders.length);
+      } catch {
+        setSellerOrders(0);
+      }
+    };
+
+    loadSellerOrders();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('seller-order-updates')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, (payload) => {
+        const changedSellerId = (payload.new as { seller_id?: string } | undefined)?.seller_id ??
+          (payload.old as { seller_id?: string } | undefined)?.seller_id;
+        if (changedSellerId === user.id) {
+          getOrdersForSeller(user.id)
+            .then((orders) => setSellerOrders(orders.length))
+            .catch(() => setSellerOrders(0));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const stats = [
     {
       name: 'Total Products',
@@ -51,8 +91,8 @@ export default function SellerDashboard() {
     },
     {
       name: 'Total Orders',
-      value: '–',
-      sub: 'Available in Sprint 5',
+      value: sellerOrders === null ? (loading ? '–' : '0') : sellerOrders.toString(),
+      sub: sellerOrders === null ? 'Available in Sprint 5' : 'Orders for your products',
       icon: ShoppingBag,
       color: 'text-amber-600 bg-amber-50',
     },
