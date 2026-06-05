@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Lock, Loader2, ArrowRight, UserCheck, Store } from 'lucide-react';
 import { UserRole } from '@/types';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export default function SignupPage() {
+  const { t } = useLanguage();
   const { signUp, user, profile, loading: authLoading } = useAuth();
   const router = useRouter();
   
@@ -33,17 +35,17 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password || !confirmPassword) {
-      setError('Please fill in all fields');
+      setError(t('fillAllFields'));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('passwordsNoMatch'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('passwordMinLength'));
       return;
     }
 
@@ -53,7 +55,7 @@ export default function SignupPage() {
     const { error: signUpError } = await signUp(email, password, role);
 
     if (signUpError) {
-      setError(signUpError.message || 'Failed to register account');
+      setError(signUpError.message || t('registerError') || 'Failed to register account');
       setLoading(false);
     } else {
       setSuccess(true);
@@ -69,18 +71,18 @@ export default function SignupPage() {
             <Mail className="w-8 h-8" />
           </div>
           <h2 className="text-2xl font-extrabold text-neutral-text">
-            Verify Your Email
+            {t('verifyEmail')}
           </h2>
           <p className="mt-4 text-sm text-neutral-muted leading-relaxed">
-            We have sent a verification link to <span className="font-semibold text-neutral-text">{email}</span>. 
-            Please check your inbox (and spam folder) to complete registration.
+            {t('verifyEmailSent')} <span className="font-semibold text-neutral-text">{email}</span>. 
+            {t('verifyEmailCheck')}
           </p>
           <div className="mt-8">
             <Link 
               href="/auth/login" 
               className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-hover"
             >
-              Go to Login page
+              {t('goToLogin')}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -105,10 +107,10 @@ export default function SignupPage() {
           </Link>
           
           <h2 className="text-3xl font-extrabold text-neutral-text tracking-tight">
-            Create Account
+            {t('createAccount')}
           </h2>
           <p className="mt-2 text-sm text-neutral-muted">
-            Register as a buyer or vendor on Tradam
+            {t('registerOnTradam')}
           </p>
         </div>
 
@@ -123,7 +125,7 @@ export default function SignupPage() {
           {/* Role Selection */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-muted mb-1.5">
-              Choose Your Account Type
+              {t('chooseAccountType')}
             </label>
             <div className="grid grid-cols-2 gap-4">
               <div 
@@ -135,8 +137,8 @@ export default function SignupPage() {
                 }`}
               >
                 <UserCheck className="w-6 h-6 mb-2" />
-                <span className="text-sm font-semibold">Buyer</span>
-                <span className="text-[10px] text-center mt-1">Browse and shop products</span>
+                <span className="text-sm font-semibold">{t('buyer')}</span>
+                <span className="text-[10px] text-center mt-1">{t('buyerDesc')}</span>
               </div>
 
               <div 
@@ -148,8 +150,8 @@ export default function SignupPage() {
                 }`}
               >
                 <Store className="w-6 h-6 mb-2" />
-                <span className="text-sm font-semibold">Seller</span>
-                <span className="text-[10px] text-center mt-1">Upload & manage storefront</span>
+                <span className="text-sm font-semibold">{t('seller')}</span>
+                <span className="text-[10px] text-center mt-1">{t('sellerDesc')}</span>
               </div>
             </div>
           </div>
@@ -157,7 +159,7 @@ export default function SignupPage() {
           <div className="space-y-4">
             <div>
               <label htmlFor="email-address" className="block text-xs font-semibold uppercase tracking-wider text-neutral-muted mb-1.5">
-                Email Address
+                {t('emailAddress')}
               </label>
               <div className="relative">
                 <input
@@ -177,7 +179,7 @@ export default function SignupPage() {
 
             <div>
               <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-neutral-muted mb-1.5">
-                Create Password
+                {t('createPassword')}
               </label>
               <div className="relative">
                 <input
@@ -197,7 +199,7 @@ export default function SignupPage() {
 
             <div>
               <label htmlFor="confirm-password" className="block text-xs font-semibold uppercase tracking-wider text-neutral-muted mb-1.5">
-                Confirm Password
+                {t('confirmPassword')}
               </label>
               <div className="relative">
                 <input
@@ -225,11 +227,11 @@ export default function SignupPage() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Creating Account...
+                  {t('creatingAccount')}
                 </>
               ) : (
                 <>
-                  Register
+                  {t('register')}
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -238,9 +240,9 @@ export default function SignupPage() {
         </form>
 
         <div className="mt-6 text-center text-xs">
-          <span className="text-neutral-muted">Already have an account? </span>
+          <span className="text-neutral-muted">{t('alreadyHaveAccount')} </span>
           <Link href="/auth/login" className="font-semibold text-primary hover:text-primary-hover">
-            Login instead
+            {t('loginInstead')}
           </Link>
         </div>
       </div>

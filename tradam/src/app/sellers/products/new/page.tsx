@@ -8,8 +8,10 @@ import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import ProductForm from '@/features/products/components/ProductForm';
 import { createProduct, uploadProductImage } from '@/services/product-service';
 import { ProductFormData } from '@/types';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export default function NewProductPage() {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -42,8 +44,8 @@ export default function NewProductPage() {
         category_id: resolvedCategoryId || null,
         title: formData.title,
         description: formData.description,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
+        price: parseFloat(formData.price.toString()),
+        stock: parseInt(formData.stock.toString()),
         image_url: imageUrl,
         is_active: formData.is_active,
       });
@@ -60,8 +62,8 @@ export default function NewProductPage() {
         <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mb-5">
           <CheckCircle2 className="w-8 h-8" />
         </div>
-        <h2 className="text-xl font-extrabold text-neutral-text">Product Created!</h2>
-        <p className="mt-2 text-sm text-neutral-muted">Redirecting to your products list…</p>
+        <h2 className="text-xl font-extrabold text-neutral-text">{t('productCreated')}</h2>
+        <p className="mt-2 text-sm text-neutral-muted">{t('redirecting')}</p>
       </div>
     );
   }
@@ -74,16 +76,16 @@ export default function NewProductPage() {
         className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-muted hover:text-primary transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Products
+        {t('backToProducts')}
       </Link>
 
       {/* Header */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-neutral-text">
-          Add New Product
+          {t('addProduct')}
         </h1>
         <p className="mt-1 text-sm text-neutral-muted">
-          Fill in the details below. Fields marked with <span className="text-red-500">*</span> are required.
+          {t('requiredFields')}
         </p>
       </div>
 
@@ -91,7 +93,7 @@ export default function NewProductPage() {
       <div className="bg-white rounded-2xl border border-neutral-border shadow-xs p-6 lg:p-8">
         <ProductForm
           onSubmit={handleSubmit}
-          submitLabel="Publish Product"
+          submitLabel={t('publishProduct')}
           loading={loading}
         />
       </div>

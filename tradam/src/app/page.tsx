@@ -4,24 +4,25 @@ import React, { useState } from 'react';
 import { useAuth } from '@/features/auth/context/auth-context';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/hooks/useLanguage';
+import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 import { 
   ShoppingBag, 
   Store, 
   ArrowRight, 
   Search, 
-  CheckCircle, 
   ShieldCheck, 
   Smartphone, 
   Zap, 
   Star,
-  Layers,
   Heart,
   Eye
 } from 'lucide-react';
 
 export default function Home() {
-  const { user, profile, signOut } = useAuth();
-  const router = useRouter();
+  const { t } = useLanguage();
+  const { tc } = useTranslatedContent();
+  const { user, profile } = useAuth();
   const [userType, setUserType] = useState<'buyer' | 'seller'>('buyer');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -36,7 +37,7 @@ export default function Home() {
     {
       id: 1,
       title: 'Premium Ndop Fabric (Traditional)',
-      price: '25,000 FCFA',
+      price: `25,000 ${t('priceCurrency')}`,
       category: 'Fashion & Fabric',
       rating: 4.9,
       reviews: 24,
@@ -46,7 +47,7 @@ export default function Home() {
     {
       id: 2,
       title: 'Organic Penja White Pepper (500g)',
-      price: '8,500 FCFA',
+      price: `8,500 ${t('priceCurrency')}`,
       category: 'Agribusiness & Food',
       rating: 5.0,
       reviews: 48,
@@ -56,7 +57,7 @@ export default function Home() {
     {
       id: 3,
       title: 'Handcrafted Wooden Statues',
-      price: '18,000 FCFA',
+      price: `18,000 ${t('priceCurrency')}`,
       category: 'Home & Living',
       rating: 4.7,
       reviews: 12,
@@ -66,7 +67,7 @@ export default function Home() {
     {
       id: 4,
       title: 'Local Pure Cocoa Powder (1kg)',
-      price: '5,000 FCFA',
+      price: `5,000 ${t('priceCurrency')}`,
       category: 'Agribusiness & Food',
       rating: 4.8,
       reviews: 31,
@@ -83,15 +84,15 @@ export default function Home() {
           <div className="text-center max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              Cameroon's Premium Multi-Vendor Marketplace
+              {t('heroBadge')}
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-neutral-text leading-tight">
-              Connecting Local Vendors to <span className="text-primary">Buyers Nationwide</span>
+              {t('heroTitle')} <span className="text-primary">{t('heroTitleHighlight')}</span>
             </h1>
             
             <p className="mt-6 text-lg sm:text-xl text-neutral-muted leading-relaxed">
-              Buy authentic Cameroonian products directly from artisans and farmers, or set up your digital storefront and start selling in minutes.
+              {t('heroSub')}
             </p>
 
             {/* User Type Switcher */}
@@ -105,7 +106,7 @@ export default function Home() {
                 }`}
               >
                 <ShoppingBag className="w-4 h-4" />
-                I want to Buy
+                {t('wantToBuy')}
               </button>
               <button 
                 onClick={() => setUserType('seller')}
@@ -116,7 +117,7 @@ export default function Home() {
                 }`}
               >
                 <Store className="w-4 h-4" />
-                I want to Sell
+                {t('wantToSell')}
               </button>
             </div>
 
@@ -127,7 +128,7 @@ export default function Home() {
                   <div className="relative w-full sm:w-80">
                     <input
                       type="text"
-                      placeholder="Search Penja pepper, Ndop fabric..."
+                      placeholder={t('homeSearchPlaceholder')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 rounded-lg border border-neutral-border bg-white text-sm text-neutral-text placeholder:text-neutral-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-xs"
@@ -138,7 +139,7 @@ export default function Home() {
                     href={`/products?q=${encodeURIComponent(searchQuery)}`}
                     className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white font-semibold text-sm px-6 py-3 rounded-lg transition-all shadow-sm"
                   >
-                    Explore Marketplace
+                    {t('exploreMarketplace')}
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </>
@@ -148,11 +149,11 @@ export default function Home() {
                     href={user && profile?.role === 'seller' ? '/sellers/dashboard' : '/auth/signup'}
                     className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white font-semibold text-sm px-6 py-3 rounded-lg transition-all shadow-sm"
                   >
-                    Open Your Store
+                    {t('openYourStore')}
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                   <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white border border-neutral-border text-neutral-text hover:bg-neutral-bg font-semibold text-sm px-6 py-3 rounded-lg transition-all cursor-pointer">
-                    Seller Handbook
+                    {t('sellerHandbook')}
                   </button>
                 </>
               )}
@@ -166,11 +167,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-text">Shop by Category</h2>
-              <p className="mt-2 text-neutral-muted text-sm sm:text-base">Discover the rich variety of locally-sourced goods available on Tradam.</p>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-text">{t('shopByCategory')}</h2>
+              <p className="mt-2 text-neutral-muted text-sm sm:text-base">{t('shopByCategorySub')}</p>
             </div>
             <a href="#" className="mt-4 sm:mt-0 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary-hover transition-colors">
-              View all categories
+              {t('viewAllCategories')}
               <ArrowRight className="w-4 h-4" />
             </a>
           </div>
@@ -182,7 +183,7 @@ export default function Home() {
                 className="group p-6 rounded-xl border border-neutral-border bg-neutral-bg/40 hover:bg-white hover:border-primary/20 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
               >
                 <div className="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">{cat.icon}</div>
-                <h3 className="font-semibold text-lg text-neutral-text group-hover:text-primary transition-colors">{cat.name}</h3>
+                <h3 className="font-semibold text-lg text-neutral-text group-hover:text-primary transition-colors">{t(cat.name)}</h3>
                 <p className="mt-1.5 text-sm text-neutral-muted">{cat.count}</p>
               </div>
             ))}
@@ -194,8 +195,8 @@ export default function Home() {
       <section className="py-16 bg-neutral-bg/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-text">Featured Local Products</h2>
-            <p className="mt-2 text-neutral-muted text-sm sm:text-base">Support domestic micro-merchants and enjoy authentic, high-quality products.</p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-text">{t('featuredProducts')}</h2>
+            <p className="mt-2 text-neutral-muted text-sm sm:text-base">{t('featuredProductsSub')}</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -215,7 +216,7 @@ export default function Home() {
                 <div className="p-5 flex-1 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between text-xs text-neutral-muted mb-1.5">
-                      <span>{product.category}</span>
+                      <span>{t(product.category)}</span>
                       <span className="flex items-center gap-0.5 text-accent font-medium">
                         <Star className="w-3.5 h-3.5 fill-current" />
                         {product.rating}
@@ -223,18 +224,18 @@ export default function Home() {
                     </div>
                     
                     <h3 className="font-bold text-neutral-text group-hover:text-primary transition-colors text-sm sm:text-base line-clamp-1">
-                      {product.title}
+                      {tc(product.title)}
                     </h3>
                     
                     <p className="mt-1 text-xs text-neutral-muted">
-                      Seller: <span className="font-medium text-neutral-text">{product.seller}</span>
+                      {t('seller')}: <span className="font-medium text-neutral-text">{product.seller}</span>
                     </p>
                   </div>
                   
                   <div className="mt-4 pt-4 border-t border-neutral-border flex items-center justify-between">
                     <span className="font-extrabold text-neutral-text">{product.price}</span>
                     <button className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-hover transition-colors">
-                      View Details
+                      {t('viewDetails')}
                       <Eye className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -249,9 +250,9 @@ export default function Home() {
       <section id="features" className="py-16 bg-white border-t border-neutral-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-text">Why Choose Tradam?</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-text">{t('whyTradam')}</h2>
             <p className="mt-3 text-neutral-muted text-sm sm:text-base">
-              We build trust through localized features and secure systems, tailor-made for the Cameroonian e-commerce landscape.
+              {t('whyTradamSub')}
             </p>
           </div>
 
@@ -260,9 +261,9 @@ export default function Home() {
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mx-auto mb-5 shadow-xs">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="font-bold text-lg text-neutral-text">Verified Vendors</h3>
+              <h3 className="font-bold text-lg text-neutral-text">{t('verifiedVendors')}</h3>
               <p className="mt-3 text-sm text-neutral-muted leading-relaxed">
-                Every merchant undergoes validation of store credentials, ensuring you get authentic products and high service standards.
+                {t('verifiedVendorsSub')}
               </p>
             </div>
 
@@ -270,9 +271,9 @@ export default function Home() {
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mx-auto mb-5 shadow-xs">
                 <Zap className="w-6 h-6" />
               </div>
-              <h3 className="font-bold text-lg text-neutral-text">Optimized Performance</h3>
+              <h3 className="font-bold text-lg text-neutral-text">{t('optimizedPerformance')}</h3>
               <p className="mt-3 text-sm text-neutral-muted leading-relaxed">
-                Super lightweight frontend designed for fast loading times even in low-bandwidth or mobile data network settings.
+                {t('optimizedPerformanceSub')}
               </p>
             </div>
 
@@ -280,9 +281,9 @@ export default function Home() {
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mx-auto mb-5 shadow-xs">
                 <Smartphone className="w-6 h-6" />
               </div>
-              <h3 className="font-bold text-lg text-neutral-text">Mobile Wallet Aware</h3>
+              <h3 className="font-bold text-lg text-neutral-text">{t('mobileWallet')}</h3>
               <p className="mt-3 text-sm text-neutral-muted leading-relaxed">
-                Engineered from the ground up to integrate seamlessly with Cameroon mobile payment systems like MTN MoMo and Orange Money.
+                {t('mobileWalletSub')}
               </p>
             </div>
           </div>
@@ -299,31 +300,31 @@ export default function Home() {
                 Tradam
               </div>
               <p className="text-sm text-gray-400 max-w-sm">
-                Empowering sellers across Cameroon with digital tools, and providing buyers a safe, seamless marketplace for local goods.
+                {t('footerTagline')}
               </p>
             </div>
             
             <div>
-              <h4 className="font-bold text-sm uppercase tracking-wider mb-4">Platform</h4>
+              <h4 className="font-bold text-sm uppercase tracking-wider mb-4">{t('platform')}</h4>
               <ul className="space-y-2.5 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-primary transition-colors">Buyer Marketplace</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Seller Dashboard</a></li>
+                <li><Link href="/products" className="hover:text-primary transition-colors">{t('marketplace')}</Link></li>
+                <li><Link href="/sellers/dashboard" className="hover:text-primary transition-colors">{t('dashboard')}</Link></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Affiliate Partners</a></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-bold text-sm uppercase tracking-wider mb-4">Support & Info</h4>
+              <h4 className="font-bold text-sm uppercase tracking-wider mb-4">{t('supportInfo')}</h4>
               <ul className="space-y-2.5 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-primary transition-colors">Contact Support</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">{t('contactSupport')}</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">{t('terms')}</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">{t('privacy')}</a></li>
               </ul>
             </div>
           </div>
 
           <div className="mt-12 pt-8 border-t border-gray-800 text-center text-xs text-gray-400">
-            &copy; {new Date().getFullYear()} Tradam. Developed for Cameroon commerce. All rights reserved.
+            &copy; {new Date().getFullYear()} Tradam. {t('allRightsReserved')}
           </div>
         </div>
       </footer>

@@ -7,8 +7,12 @@ import { useAuth } from '@/features/auth/context/auth-context';
 import { getCartItems, removeCartItem, updateCartItemQuantity } from '@/services/cart-service';
 import { CartItem } from '@/types';
 import { Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
+import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 export default function CartPage() {
+  const { t } = useLanguage();
+  const { tc } = useTranslatedContent();
   const { user, loading } = useAuth();
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
@@ -24,12 +28,12 @@ export default function CartPage() {
         const cartItems = await getCartItems(user.id);
         setItems(cartItems);
       } catch (err: any) {
-        setError(err?.message || 'Unable to load cart.');
+        setError(err?.message || t('loadCartError') || 'Unable to load cart.');
       }
     };
 
     loadCart();
-  }, [user]);
+  }, [user, t]);
 
   const handleQuantity = async (item: CartItem, newQuantity: number) => {
     if (!user) return;
@@ -43,7 +47,7 @@ export default function CartPage() {
         .filter((i): i is CartItem => i !== null)
       );
     } catch (err: any) {
-      setError(err?.message || 'Could not update quantity.');
+      setError(err?.message || t('statusUpdateError') || 'Could not update quantity.');
     } finally {
       setSaving(false);
     }
@@ -58,7 +62,7 @@ export default function CartPage() {
       await removeCartItem(itemId);
       setItems((prev) => prev.filter((item) => item.id !== itemId));
     } catch (err: any) {
-      setError(err?.message || 'Could not remove item.');
+      setError(err?.message || t('removeError') || 'Could not remove item.');
     } finally {
       setSaving(false);
     }
@@ -71,7 +75,7 @@ export default function CartPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-bg py-14 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto bg-white border border-neutral-border rounded-3xl p-10 text-center text-neutral-muted">Loading cart…</div>
+        <div className="max-w-5xl mx-auto bg-white border border-neutral-border rounded-3xl p-10 text-center text-neutral-muted">{t('loading')}…</div>
       </div>
     );
   }
@@ -80,11 +84,11 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-neutral-bg py-14 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto bg-white border border-neutral-border rounded-3xl p-10 text-center">
-          <h1 className="text-2xl font-bold text-neutral-text">Sign in to view your cart</h1>
-          <p className="mt-3 text-sm text-neutral-muted">Your cart is saved to your account, so you can continue shopping anytime.</p>
+          <h1 className="text-2xl font-bold text-neutral-text">{t('signInToViewCart')}</h1>
+          <p className="mt-3 text-sm text-neutral-muted">{t('signInToViewCartSub')}</p>
           <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
-            <Link href="/auth/login" className="px-5 py-3 bg-primary text-white rounded-xl font-semibold">Log In</Link>
-            <Link href="/auth/signup" className="px-5 py-3 border border-neutral-border rounded-xl font-semibold">Sign Up</Link>
+            <Link href="/auth/login" className="px-5 py-3 bg-primary text-white rounded-xl font-semibold">{t('logIn')}</Link>
+            <Link href="/auth/signup" className="px-5 py-3 border border-neutral-border rounded-xl font-semibold">{t('getStarted')}</Link>
           </div>
         </div>
       </div>
@@ -96,9 +100,9 @@ export default function CartPage() {
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-neutral-muted">Shopping Cart</p>
-            <h1 className="mt-3 text-3xl font-extrabold text-neutral-text">Review your items</h1>
-            <p className="mt-2 text-sm text-neutral-muted">Update quantities or remove items before checkout.</p>
+            <p className="text-sm uppercase tracking-[0.3em] text-neutral-muted">{t('shoppingCart')}</p>
+            <h1 className="mt-3 text-3xl font-extrabold text-neutral-text">{t('reviewItems')}</h1>
+            <p className="mt-2 text-sm text-neutral-muted">{t('cartSubtitle')}</p>
           </div>
         </div>
 
@@ -108,10 +112,10 @@ export default function CartPage() {
 
         {items.length === 0 ? (
           <div className="rounded-3xl border border-neutral-border bg-white p-10 text-center">
-            <h2 className="text-xl font-semibold text-neutral-text">Your cart is empty</h2>
-            <p className="mt-3 text-sm text-neutral-muted">Browse the marketplace and add products to get started.</p>
+            <h2 className="text-xl font-semibold text-neutral-text">{t('emptyCart')}</h2>
+            <p className="mt-3 text-sm text-neutral-muted">{t('emptyCartSub')}</p>
             <Link href="/products" className="mt-6 inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-hover transition-colors">
-              Browse Products
+              {t('browseProducts')}
             </Link>
           </div>
         ) : (
@@ -129,14 +133,14 @@ export default function CartPage() {
                         )}
                       </div>
                       <div>
-                        <h2 className="text-lg font-semibold text-neutral-text">{item.product?.title}</h2>
-                        <p className="mt-2 text-sm text-neutral-muted line-clamp-2">{item.product?.description}</p>
-                        <p className="mt-3 text-sm text-neutral-muted">{item.product?.category?.name || 'Uncategorized'}</p>
+                        <h2 className="text-lg font-semibold text-neutral-text">{tc(item.product?.title)}</h2>
+                        <p className="mt-2 text-sm text-neutral-muted line-clamp-2">{tc(item.product?.description)}</p>
+                        <p className="mt-3 text-sm text-neutral-muted">{t(item.product?.category?.name || 'uncategorized')}</p>
                       </div>
                     </div>
 
                     <div className="flex flex-col gap-3 sm:items-end">
-                      <p className="text-sm font-semibold text-neutral-text">{item.product?.price.toLocaleString()} FCFA each</p>
+                      <p className="text-sm font-semibold text-neutral-text">{item.product?.price.toLocaleString()} {t('priceCurrency')} {t('each')}</p>
                       <div className="flex items-center gap-2 rounded-full border border-neutral-border bg-neutral-bg px-2 py-1">
                         <button
                           type="button"
@@ -163,7 +167,7 @@ export default function CartPage() {
                         className="inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
-                        Remove
+                        {t('remove')}
                       </button>
                     </div>
                   </div>
@@ -172,19 +176,19 @@ export default function CartPage() {
             </div>
 
             <div className="rounded-3xl border border-neutral-border bg-white p-6 shadow-sm">
-              <p className="text-sm uppercase tracking-[0.3em] text-neutral-muted">Order summary</p>
+              <p className="text-sm uppercase tracking-[0.3em] text-neutral-muted">{t('orderSummary')}</p>
               <div className="mt-6 space-y-4">
                 <div className="flex items-center justify-between text-sm text-neutral-muted">
-                  <span>Subtotal</span>
-                  <span>{subtotal.toLocaleString()} FCFA</span>
+                  <span>{t('subtotal')}</span>
+                  <span>{subtotal.toLocaleString()} {t('priceCurrency')}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm text-neutral-muted">
-                  <span>Delivery</span>
-                  <span>Calculated at checkout</span>
+                  <span>{t('delivery')}</span>
+                  <span>{t('calcCheckout')}</span>
                 </div>
                 <div className="border-t border-neutral-border pt-4 flex items-center justify-between text-base font-semibold text-neutral-text">
-                  <span>Total</span>
-                  <span>{subtotal.toLocaleString()} FCFA</span>
+                  <span>{t('total')}</span>
+                  <span>{subtotal.toLocaleString()} {t('priceCurrency')}</span>
                 </div>
               </div>
               <button
@@ -192,7 +196,7 @@ export default function CartPage() {
                 onClick={() => router.push('/checkout')}
                 className="mt-8 w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-hover transition-colors"
               >
-                Checkout now
+                {t('checkoutNow')}
               </button>
             </div>
           </div>

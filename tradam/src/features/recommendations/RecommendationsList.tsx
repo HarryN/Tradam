@@ -4,9 +4,13 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Product } from '@/types';
 import { ShoppingCart } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
+import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 export default function RecommendationsList({ productId, userId }: { productId?: string; userId?: string }) {
   const [items, setItems] = useState<Product[]>([]);
+  const { t } = useLanguage();
+  const { tc } = useTranslatedContent();
 
   useEffect(() => {
     const q = productId ? `?productId=${productId}` : userId ? `?userId=${userId}` : '';
@@ -21,8 +25,8 @@ export default function RecommendationsList({ productId, userId }: { productId?:
   return (
     <div className="mt-12 pb-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-extrabold text-neutral-text">You may also like</h2>
-        <p className="text-sm text-neutral-muted">{items.length} recommendations</p>
+        <h2 className="text-2xl font-extrabold text-neutral-text">{t('recommendationsTitle')}</h2>
+        <p className="text-sm text-neutral-muted">{items.length} {t('recommendations')}</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {items.map((p) => (
@@ -39,19 +43,19 @@ export default function RecommendationsList({ productId, userId }: { productId?:
             {/* Product Info */}
             <div className="p-4">
               {/* Category */}
-              {p.category && <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">{p.category.name}</p>}
+              {p.category && <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">{t(p.category.name)}</p>}
 
               {/* Title */}
-              <h3 className="text-sm font-bold text-neutral-text group-hover:text-primary transition-colors line-clamp-2 mb-2">{p.title}</h3>
+              <h3 className="text-sm font-bold text-neutral-text group-hover:text-primary transition-colors line-clamp-2 mb-2">{tc(p.title)}</h3>
 
               {/* Description */}
-              <p className="text-xs text-neutral-muted line-clamp-2 mb-3 leading-relaxed">{p.description}</p>
+              <p className="text-xs text-neutral-muted line-clamp-2 mb-3 leading-relaxed">{tc(p.description)}</p>
 
               {/* Price & Stock */}
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-lg font-extrabold text-neutral-text">{p.price.toLocaleString()} FCFA</p>
-                  <p className="text-xs text-neutral-muted mt-0.5">Stock: {p.stock}</p>
+                  <p className="text-xs text-neutral-muted mt-0.5">{p.stock} {t('stockAvailable')}</p>
                 </div>
                 <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
                   <ShoppingCart className="w-4 h-4 text-primary" />

@@ -2,7 +2,11 @@ import { supabase } from '@/lib/supabase';
 import { BuyerOrder, CartItem, Order, OrderItem } from '@/types';
 import { clearCart } from '@/services/cart-service';
 
-export async function createOrderFromCart(buyerId: string, items: CartItem[]): Promise<Order> {
+export async function createOrderFromCart(
+  buyerId: string, 
+  items: CartItem[], 
+  paymentReference?: string
+): Promise<Order> {
   if (!items || items.length === 0) {
       throw new Error('Cart is empty');
   }
@@ -14,7 +18,12 @@ export async function createOrderFromCart(buyerId: string, items: CartItem[]): P
 
   const { data: order, error: orderError } = await supabase
     .from('orders')
-    .insert({ buyer_id: buyerId, total_price: totalPrice, status: 'pending' })
+    .insert({ 
+      buyer_id: buyerId, 
+      total_price: totalPrice, 
+      status: 'paid', // Mark as paid since we only call this after successful payment
+      payment_reference: paymentReference 
+    })
     .select('*')
     .single();
 

@@ -8,8 +8,10 @@ import { ArrowLeft, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import ProductForm from '@/features/products/components/ProductForm';
 import { getProductById, updateProduct, uploadProductImage, deleteProductImage } from '@/services/product-service';
 import { Product, ProductFormData } from '@/types';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export default function EditProductPage() {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const router = useRouter();
   const params = useParams();
@@ -27,19 +29,19 @@ export default function EditProductPage() {
     getProductById(productId)
       .then((data) => {
         if (!data) {
-          setFetchError('Product not found.');
+          setFetchError(t('productNotFound'));
           return;
         }
         // Ensure this product belongs to the current seller
         if (data.seller_id !== user?.id) {
-          setFetchError('You do not have permission to edit this product.');
+          setFetchError(t('accessRestricted'));
           return;
         }
         setProduct(data);
       })
-      .catch(() => setFetchError('Failed to load product details.'))
+      .catch(() => setFetchError(t('loadProductsError')))
       .finally(() => setFetching(false));
-  }, [productId, user?.id]);
+  }, [productId, user?.id, t]);
 
   const handleSubmit = async (formData: ProductFormData, resolvedCategoryId: string) => {
     if (!user || !product) return;
@@ -66,8 +68,8 @@ export default function EditProductPage() {
         category_id: resolvedCategoryId || null,
         title: formData.title,
         description: formData.description,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
+        price: parseFloat(formData.price.toString()),
+        stock: parseInt(formData.stock.toString()),
         image_url: imageUrl,
         is_active: formData.is_active,
       });
@@ -83,7 +85,7 @@ export default function EditProductPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 text-primary animate-spin mb-3" />
-        <p className="text-sm text-neutral-muted">Loading product…</p>
+        <p className="text-sm text-neutral-muted">{t('loadingProduct')}</p>
       </div>
     );
   }
@@ -96,7 +98,7 @@ export default function EditProductPage() {
           <div>
             <p className="text-sm font-bold">{fetchError}</p>
             <Link href="/sellers/products" className="text-xs font-semibold mt-2 inline-block underline">
-              Back to Products
+              {t('backToProducts')}
             </Link>
           </div>
         </div>
@@ -110,8 +112,8 @@ export default function EditProductPage() {
         <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mb-5">
           <CheckCircle2 className="w-8 h-8" />
         </div>
-        <h2 className="text-xl font-extrabold text-neutral-text">Changes Saved!</h2>
-        <p className="mt-2 text-sm text-neutral-muted">Redirecting to your products list…</p>
+        <h2 className="text-xl font-extrabold text-neutral-text">{t('changesSaved')}</h2>
+        <p className="mt-2 text-sm text-neutral-muted">{t('redirecting')}</p>
       </div>
     );
   }
@@ -124,16 +126,16 @@ export default function EditProductPage() {
         className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-muted hover:text-primary transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Products
+        {t('backToProducts')}
       </Link>
 
       {/* Header */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-neutral-text">
-          Edit Product
+          {t('editProduct')}
         </h1>
         <p className="mt-1 text-sm text-neutral-muted line-clamp-1">
-          Editing: <span className="font-bold text-neutral-text">{product?.title}</span>
+          {t('editing')}: <span className="font-bold text-neutral-text">{product?.title}</span>
         </p>
       </div>
 
@@ -151,7 +153,7 @@ export default function EditProductPage() {
               is_active: product.is_active,
             }}
             onSubmit={handleSubmit}
-            submitLabel="Save Changes"
+            submitLabel={t('saveProduct')}
             loading={loading}
           />
         </div>

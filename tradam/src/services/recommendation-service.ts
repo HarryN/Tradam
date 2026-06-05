@@ -40,13 +40,59 @@ export async function getRelatedProducts(productId: string, limit = 6): Promise<
 }
 
 export async function getPersonalizedRecommendations(userId: string, limit = 6): Promise<Product[]> {
-  // Get categories from recent purchases
   const { data: items } = await supabase
     .from('order_items')
     .select('product:products(id, category_id) , order:orders(id, buyer_id)')
     .eq('order.buyer_id', userId)
     .order('id', { ascending: false })
     .limit(50);
+
+  const purchasedProductIds = Array.from(
+    new Set(
+      (items || [])
+        .map((it: any) => it.product?.id)
+        .filter(Boolean)
+    )
+  );
+
+  if (purchasedProductIds.length > 0) {
+    const { data: clusterAssignments } = await supabase
+      .from('product_clusters')
+      .select('cluster_id')
+      .in('product_id', purchasedProductIds);
+
+    const clusterIds = Array.from(
+      new Set((clusterAssignments || []).map((row: any) => row.cluster_id).filter(Boolean))
+    );
+
+    if (clusterIds.length > 0) {
+      const { data: clusterProducts } = await supabase
+        .from('product_clusters')
+        .select('product_id')
+        .in('cluster_id', clusterIds)
+        .limit(limit * 5);
+
+      const recommendedIds = Array.from(
+        new Set(
+          (clusterProducts || [])
+            .map((row: any) => row.product_id)
+            .filter((id: string) => !purchasedProductIds.includes(id))
+        )
+      ).slice(0, limit);
+
+      if (recommendedIds.length > 0) {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .in('id', recommendedIds)
+          .eq('is_active', true);
+
+        if (!error && data && data.length > 0) {
+          return (data || []) as Product[];
+        }
+      }
+    }
+  }
 
   const categoryIds = Array.from(
     new Set(
@@ -57,7 +103,6 @@ export async function getPersonalizedRecommendations(userId: string, limit = 6):
   );
 
   if (categoryIds.length === 0) {
-    // fallback: popular / recent products
     const { data } = await supabase
       .from('products')
       .select('*')

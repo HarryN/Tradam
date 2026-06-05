@@ -1,9 +1,13 @@
 import { supabase } from '@/lib/supabase';
 import { Product } from '@/types';
+import { execFileSync } from 'node:child_process';
+import path from 'path';
+import { getAllInteractionsForClustering } from './interaction-service';
 
 interface ProductFeatures {
   categoryId: number;
   priceNorm: number;
+  popularityNorm: number;
   keywords: number[];
 }
 
@@ -106,8 +110,20 @@ class SimpleKMeans {
 }
 
 // Extract simple numeric features from products for clustering
-function extractFeatures(products: Product[], categories: Map<string, number>): ProductFeatures[] {
+function extractFeatures(
+  products: Product[], 
+  categories: Map<string, number>,
+  interactions: any[]
+): ProductFeatures[] {
   const maxPrice = Math.max(...products.map(p => p.price), 1);
+  
+  // Calculate popularity
+  const popularityMap = new Map<string, number>();
+  interactions.forEach(inter => {
+    const current = popularityMap.get(inter.product_id) || 0;
+    popularityMap.set(inter.product_id, current + (inter.weight || 1.0));
+  });
+  const maxPopularity = Math.max(...Array.from(popularityMap.values()), 1.0);
   
   // Simple keyword extraction from description (count common product terms)
   const keywordTerms = ['phone', 'laptop', 'cloth', 'shoe', 'book', 'food', 'home', 'beauty', 'sport', 'tech'];
@@ -115,13 +131,14 @@ function extractFeatures(products: Product[], categories: Map<string, number>): 
   return products.map(p => {
     const categoryId = categories.get(p.category_id || '') || 0;
     const priceNorm = maxPrice > 0 ? p.price / maxPrice : 0;
+    const popularityNorm = (popularityMap.get(p.id) || 0) / maxPopularity;
     
     // Count keywords in description
     const keywords = keywordTerms.map(term => 
       p.description.toLowerCase().includes(term) ? 1 : 0
     );
     
-    return { categoryId, priceNorm, keywords };
+    return { categoryId, priceNorm, popularityNorm, keywords };
   });
 }
 
@@ -129,19 +146,48 @@ function extractFeatures(products: Product[], categories: Map<string, number>): 
 function normalizeFeatures(features: ProductFeatures[]): number[][] {
   if (features.length === 0) return [];
   
-  // Build vectors: [categoryId, priceNorm, ...keywords]
+  // Build vectors: [categoryId, priceNorm, popularityNorm, ...keywords]
   const vectors = features.map(f => [
     f.categoryId / 10, // rough normalize (categories usually 0-10)
     f.priceNorm,
+    f.popularityNorm,
     ...f.keywords.map(k => k / 1), // keywords already 0/1
   ]);
   
   return vectors;
 }
 
+function runPythonClusterAssignments(
+  products: Product[], 
+  numClusters: number,
+  interactions: any[]
+): Map<string, number> {
+  const pythonBinary = process.env.PYTHON || 'python';
+  const scriptPath = path.join(/*turbopackIgnore: true*/ process.cwd(), 'python', 'recommendation_cluster.py');
+  const payload = {
+    products: products.map((product) => ({
+      id: product.id,
+      category_id: product.category_id || null,
+      price: product.price,
+      description: product.description || '',
+    })),
+    interactions: interactions,
+    num_clusters: numClusters,
+  };
+
+  const output = execFileSync(pythonBinary, [pythonBinary.includes('python') ? scriptPath : scriptPath], {
+    input: JSON.stringify(payload),
+    encoding: 'utf-8',
+    stdio: ['pipe', 'pipe', 'pipe'],
+    maxBuffer: 10 * 1024 * 1024,
+  });
+
+  const result = JSON.parse(output || '{}');
+  return new Map(Object.entries(result.assignments || {}));
+}
+
 export async function computeProductClusters(numClusters = 5): Promise<Map<string, number>> {
   try {
-    // Fetch all active products
     const { data: products } = await supabase
       .from('products')
       .select('*')
@@ -152,7 +198,17 @@ export async function computeProductClusters(numClusters = 5): Promise<Map<strin
       return new Map();
     }
 
-    // Fetch all categories for reference
+    const interactions = await getAllInteractionsForClustering();
+
+    try {
+      const assignments = runPythonClusterAssignments(products as Product[], numClusters, interactions);
+      if (assignments.size > 0) {
+        return assignments;
+      }
+    } catch (pythonError) {
+      console.warn('Python clustering failed, falling back to local TypeScript K-means.', pythonError);
+    }
+
     const { data: categories } = await supabase
       .from('categories')
       .select('id, name');
@@ -161,17 +217,14 @@ export async function computeProductClusters(numClusters = 5): Promise<Map<strin
       (categories || []).map((c: any, idx: number) => [c.id, idx])
     );
 
-    // Extract and normalize features
-    const features = extractFeatures(products as Product[], categoryMap);
+    const features = extractFeatures(products as Product[], categoryMap, interactions);
     const vectors = normalizeFeatures(features);
 
     if (vectors.length === 0) return new Map();
 
-    // Run K-means
     const kmeans = new SimpleKMeans(Math.min(numClusters, products.length), 100);
     const clusters = kmeans.predict(vectors);
 
-    // Map productId -> clusterId
     const result = new Map<string, number>();
     (products as Product[]).forEach((p, idx) => {
       result.set(p.id, clusters[idx]);

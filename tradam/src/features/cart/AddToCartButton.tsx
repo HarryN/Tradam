@@ -6,11 +6,15 @@ import { addProductToCart } from '@/services/cart-service';
 import { useRouter } from 'next/navigation';
 import { ShoppingCart, CheckCircle2 } from 'lucide-react';
 
+import { useLanguage } from '@/hooks/useLanguage';
+import { trackInteraction } from '@/services/interaction-service';
+
 interface AddToCartButtonProps {
   productId: string;
 }
 
 export default function AddToCartButton({ productId }: AddToCartButtonProps) {
+  const { t } = useLanguage();
   const { user, signOut } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -18,7 +22,7 @@ export default function AddToCartButton({ productId }: AddToCartButtonProps) {
 
   const handleAddToCart = async () => {
     if (!user) {
-      setMessage('Please log in to add items to your cart.');
+      setMessage(t('loginToAddToCart') || 'Please log in to add items to your cart.');
       return;
     }
 
@@ -27,11 +31,15 @@ export default function AddToCartButton({ productId }: AddToCartButtonProps) {
 
     try {
       await addProductToCart(user.id, productId, 1);
-      setMessage('Added to cart.');
+      
+      // Track cart_add interaction
+      trackInteraction(user.id, productId, 'cart_add');
+      
+      setMessage(t('addedToCart'));
       setTimeout(() => setMessage(null), 2500);
       router.refresh();
     } catch (error: any) {
-      setMessage(error?.message || 'Could not add to cart.');
+      setMessage(error?.message || t('addToCartError') || 'Could not add to cart.');
     } finally {
       setLoading(false);
     }
@@ -46,7 +54,7 @@ export default function AddToCartButton({ productId }: AddToCartButtonProps) {
         className="inline-flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-hover transition-colors disabled:opacity-60"
       >
         <ShoppingCart className="w-4 h-4" />
-        {loading ? 'Adding…' : 'Add to Cart'}
+        {loading ? t('adding') : t('addToCart')}
       </button>
       {message && (
         <div className="text-sm text-white bg-neutral-text/80 rounded-xl px-3 py-2">

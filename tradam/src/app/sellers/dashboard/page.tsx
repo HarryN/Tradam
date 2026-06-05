@@ -5,8 +5,11 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/features/auth/context/auth-context';
 import { getSellerProducts } from '@/services/product-service';
 import { getOrdersForSeller } from '@/services/order-service';
+import { getSellerAverageRating } from '@/services/rating-service';
 import { Product } from '@/types';
 import Link from 'next/link';
+import { useLanguage } from '@/hooks/useLanguage';
+import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 import {
   Package,
   Plus,
@@ -20,37 +23,35 @@ import {
 } from 'lucide-react';
 
 export default function SellerDashboard() {
+  const { t } = useLanguage();
+  const { tc } = useTranslatedContent();
   const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user) return;
-    getSellerProducts(user.id)
-      .then(setProducts)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [user]);
-
-  const activeProducts = products.filter(p => p.is_active).length;
-  const draftProducts = products.filter(p => !p.is_active).length;
-  const totalValue = products.reduce((sum, p) => sum + p.price * p.stock, 0);
-
+  const [rating, setRating] = useState<{ average: number; count: number }>({ average: 0, count: 0 });
   const [sellerOrders, setSellerOrders] = useState<number>(0);
 
   useEffect(() => {
     if (!user) return;
 
-    const loadSellerOrders = async () => {
+    const loadData = async () => {
       try {
-        const orders = await getOrdersForSeller(user.id);
-        setSellerOrders(orders.length);
-      } catch {
-        setSellerOrders(0);
+        const [productsData, ordersData, ratingData] = await Promise.all([
+          getSellerProducts(user.id),
+          getOrdersForSeller(user.id),
+          getSellerAverageRating(user.id)
+        ]);
+        setProducts(productsData);
+        setSellerOrders(ordersData.length);
+        setRating(ratingData);
+      } catch (err) {
+        console.error('Error loading seller dashboard data:', err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadSellerOrders();
+    loadData();
   }, [user]);
 
   useEffect(() => {
@@ -74,32 +75,36 @@ export default function SellerDashboard() {
     };
   }, [user]);
 
+  const activeProducts = products.filter(p => p.is_active).length;
+  const draftProducts = products.filter(p => !p.is_active).length;
+  const totalValue = products.reduce((sum, p) => sum + p.price * p.stock, 0);
+
   const stats = [
     {
-      name: 'Total Products',
+      name: t('totalProducts'),
       value: loading ? '–' : products.length.toString(),
-      sub: `${activeProducts} live · ${draftProducts} draft`,
+      sub: `${activeProducts} ${t('live')} · ${draftProducts} ${t('draft')}`,
       icon: Package,
       color: 'text-primary bg-primary/10',
     },
     {
-      name: 'Inventory Value',
-      value: loading ? '–' : `${totalValue.toLocaleString()} FCFA`,
-      sub: 'Based on stock × price',
+      name: t('inventoryValue'),
+      value: loading ? '–' : `${totalValue.toLocaleString()} ${t('priceCurrency')}`,
+      sub: t('basedOnStock'),
       icon: TrendingUp,
       color: 'text-emerald-600 bg-emerald-50',
     },
     {
-      name: 'Total Orders',
-      value: sellerOrders === null ? (loading ? '–' : '0') : sellerOrders.toString(),
-      sub: sellerOrders === null ? 'Available in Sprint 5' : 'Orders for your products',
+      name: t('totalOrders'),
+      value: loading ? '–' : sellerOrders.toString(),
+      sub: t('ordersForProducts'),
       icon: ShoppingBag,
       color: 'text-amber-600 bg-amber-50',
     },
     {
-      name: 'Store Rating',
-      value: '–',
-      sub: 'No reviews yet',
+      name: t('storeRating'),
+      value: rating.count > 0 ? `${rating.average} ★` : '–',
+      sub: rating.count > 0 ? `${rating.count} reviews` : t('noReviews'),
       icon: Star,
       color: 'text-purple-600 bg-purple-50',
     },
@@ -113,10 +118,10 @@ export default function SellerDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-neutral-text">
-            Dashboard
+            {t('welcomeBack')}, <span className="text-primary">{user?.email?.split('@')[0]}</span>
           </h1>
-          <p className="mt-1 text-sm text-neutral-muted">
-            Welcome back — here's how your store is performing.
+          <p className="mt-1 text-sm text-neutral-muted font-medium">
+            Here's what's happening with your account today.
           </p>
         </div>
         <Link
@@ -124,7 +129,7 @@ export default function SellerDashboard() {
           className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm shrink-0"
         >
           <Plus className="w-4 h-4" />
-          Add Product
+          {t('addProduct')}
         </Link>
       </div>
 
@@ -150,12 +155,12 @@ export default function SellerDashboard() {
       {/* Recent Products Table */}
       <div className="bg-white rounded-2xl border border-neutral-border shadow-xs overflow-hidden">
         <div className="px-6 py-4 border-b border-neutral-border flex items-center justify-between">
-          <h2 className="text-base font-extrabold text-neutral-text">Recent Products</h2>
+          <h2 className="text-base font-extrabold text-neutral-text">{t('recentProducts')}</h2>
           <Link
             href="/sellers/products"
             className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-hover transition-colors"
           >
-            View all
+            {t('viewAll')}
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -178,16 +183,16 @@ export default function SellerDashboard() {
             <div className="w-14 h-14 rounded-2xl bg-primary/5 flex items-center justify-center text-primary mb-4">
               <Package className="w-7 h-7" />
             </div>
-            <h3 className="text-base font-extrabold text-neutral-text">No products yet</h3>
+            <h3 className="text-base font-extrabold text-neutral-text">{t('noProductsYet')}</h3>
             <p className="mt-2 text-sm text-neutral-muted max-w-xs">
-              Start by adding your first product to your store.
+              {t('startByAdding')}
             </p>
             <Link
               href="/sellers/products/new"
               className="mt-5 inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm"
             >
               <Plus className="w-4 h-4" />
-              Add First Product
+              {t('addFirstProduct')}
             </Link>
           </div>
         ) : (
@@ -206,16 +211,16 @@ export default function SellerDashboard() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-neutral-text truncate group-hover:text-primary transition-colors">
-                    {product.title}
+                    {tc(product.title)}
                   </p>
                   <p className="text-xs text-neutral-muted mt-0.5">
-                    {product.category?.name || 'Uncategorized'} · {product.stock} in stock
+                    {t(product.category?.name || 'uncategorized')} · {product.stock} {t('inStock')}
                   </p>
                 </div>
 
                 {/* Price */}
                 <p className="text-sm font-extrabold text-neutral-text shrink-0">
-                  {product.price.toLocaleString()} FCFA
+                  {product.price.toLocaleString()} {t('priceCurrency')}
                 </p>
 
                 {/* Status badge */}
@@ -225,7 +230,7 @@ export default function SellerDashboard() {
                     : 'bg-neutral-border/60 text-neutral-muted'
                 }`}>
                   {product.is_active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                  {product.is_active ? 'Live' : 'Draft'}
+                  {product.is_active ? t('live') : t('draft')}
                 </span>
 
                 {/* Edit link */}
