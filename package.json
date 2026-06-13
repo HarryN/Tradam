@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm install lightningcss-linux-x64-gnu@1.32.0 @tailwindcss/oxide-linux-x64-gnu@4.3.0 --no-save --prefer-offline=false",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -29,5 +30,9 @@
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "lightningcss-linux-x64-gnu": "1.32.0",
+    "@tailwindcss/oxide-linux-x64-gnu": "4.3.0"
   }
 }
