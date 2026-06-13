@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/context/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 
-export default function LoginPage() {
+function LoginContent() {
   const { t } = useLanguage();
   const { signIn, signInWithGoogle, resetPassword, user, profile, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -276,5 +276,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-neutral-bg">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

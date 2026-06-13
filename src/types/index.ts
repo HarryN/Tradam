@@ -95,6 +95,7 @@ export interface Order {
   payment_phone?: string;
   created_at: string;
   updated_at?: string;
+  buyer?: Profile;
 }
 
 export interface BuyerOrder extends Order {
